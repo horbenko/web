@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    {% load wysiwyg %}
+    {% wysiwyg_setup %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+
+        <div class="col-xs-4">
+            <nav id="sidebar">
+
+                <div class="new-post">
+                    <a href="{% url 'post:create' %}" class="new-post btn btn-default">+ New Post </a>
+                </div>
+
+                {% if posts %}
+                    <ul id="posts">
+                        {% for post in posts %}
+                            <li data-url="{% url 'post:update' post.id %}">
+                                <div class="post-title">{{ post.title }}</div>
+                                <div class="post-body">{{ post.body | safe }}</div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p id="noposts">No posts are available.</p>
+                {% endif %}
+            </nav>
+        </div>
+
+        <div class="col-xs-8">
+
+            {% if form.errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if object %}
+                <form action="{% url 'post:update' object.pk %}" method="post" accept-charset="utf-8">
+            {% else %}
+                <form action="{% url 'post:create' %}" method="post" accept-charset="utf-8">
+            {% endif %}
+
+            {% csrf_token %}
+            {% for field in form %}
+                <p>
+                    {% if field.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                {{ field }}
+                </p>
+            {% endfor %}
+            <input type="hidden" name="next" value="{{ next }}" />
+
+            {% if object %}
+                <input class="btn btn-default" type="submit" value="Update Post"/>
+            {% else %}
+                <input class="btn btn-default" type="submit" value="Create Post"/>
+            {% endif %}
+            </form>
+
+            {% if object %}
+                <form action="{% url 'post:delete' object.pk %}" method="post" id="delete-post-form">
+                    {% csrf_token %}
+                    <a class="btn btn-default" id="delete-post">
+                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    </a>
+                </form>
+            {% endif %}
+
+
+        </div>
+    </div>
+
+    {% wysiwyg_editor "id_body" %}
+
+{% endblock %}
